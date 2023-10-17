@@ -2,27 +2,30 @@ version: '3.1'
 services:
   mysql-service:
     container_name: mysqldb
-    image: mysql
+    image: mysql:latest
     restart: always
     expose:
       - 3306
     environment:
       MYSQL_DATABASE: my_db
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
     volumes:
       - mysql_data:/var/lib/mysql
   phpmyadmin:
     container_name: phpmyadmin
     image: phpmyadmin
     restart: always
+    depends_on:
+      - mysql-service
     ports:
-      - 9001:80
+      - 8080:80
     environment:
-      - PMA_HOST=mysql-service
-      - PMA_USER=root
-      - PMA_PASSWORD=rootpassword
+      MYSQL_ROOT_PASSWORD: password
+      PMA_HOST: mysql-service
+      PMA_USER: admin
+      PMA_PASSWORD: password
   app:
     container_name: app
     build: ./
@@ -36,8 +39,8 @@ services:
       - 9000:9000
     environment:
       MYSQL_HOST: mysql-service
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
       MYSQL_DB: my_db
 volumes:
   mysql_data:
