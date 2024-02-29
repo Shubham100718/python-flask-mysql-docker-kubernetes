@@ -5,7 +5,7 @@ pipeline {
         stage("Clone Code"){
             steps {
                 echo "Cloning the code"
-                git url:"https://github.com/Shubham100718/dockerize_python_app.git", branch: "main"
+                git url:"https://github.com/Shubham100718/three_tier_python_app.git", branch: "main"
             }
         }
         stage("Build"){
