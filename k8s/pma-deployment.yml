@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpmyadmin
+  labels:
+    app: phpmyadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpmyadmin
+  template:
+    metadata:
+      labels:
+        app: phpmyadmin
+    spec:
+      containers:
+        - name: phpmyadmin
+          image: phpmyadmin:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"
+            - name: PMA_HOST
+              value: "10.98.19.211"        # this is your mysql's service clusture IP, Make sure to change it with yours
+            - name: PMA_USER
+              value: "admin"
+            - name: PMA_PASSWORD
+              value: "admin"
+          ports:
+            - containerPort: 80

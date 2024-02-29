@@ -1,9 +1,8 @@
-import logging, pymysql, traceback
+import logging
+import traceback
 from app import app
-from config import mysql
-from flask import jsonify
-from flask import request
-from case_crawler import get_tribunals_court_cases_data
+from flask import jsonify, request
+from case_crawler import get_tribunals_court_cases_data, get_tribunals_token_values
 from crawler import get_tribunals_detail_data
 from courtClassCaseList import TribunalsCaseListInsert
 from courtClassForDetailData import TribunalsInsert
@@ -15,7 +14,6 @@ formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 file_handler = logging.FileHandler('tribunals.log')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
-
 
 @app.route('/tribunals/caselist', methods=['POST'])
 def tribunals_caselist():
@@ -30,7 +28,7 @@ def tribunals_caselist():
         _filing_no = _json.get('filing_no', None)
         _case_number = _json.get('case_number', None)
         _advocate_name = _json.get('advocate_name', None)
-        _case_year = _json['case_year']
+        _case_year = _json.get('case_year', None)
 
         input_data = {
             'search_by': _search_by,
@@ -45,24 +43,29 @@ def tribunals_caselist():
             'case_year': _case_year
         }
         case_list_data = get_tribunals_court_cases_data(input_data)
-        if case_list_data != []:
-            logger.info('we have got case_list_data successfully')
             
         court_type_id = 8
         if case_list_data != []:
-            if request.method == 'POST':
-                TribunalsCaseListInsert(court_type_id, _search_by, _location, _advocate_name, _party_name, _party_type, _case_type, _case_number, _case_year, _case_status, case_list_data).createTribunalsCaseList()
-
-                respone = jsonify({'meaasge': 'Fetched NCLAT Tribunals Case List succesfully!'})
-                respone.status_code = 200
-                return respone
+            if case_list_data != None:
+                if case_list_data[0].get('message') != 'Server error, Please try after some time!':
+                    if request.method == 'POST':
+                        case_list_table_data = TribunalsCaseListInsert(court_type_id, _search_by, _location, _case_type, _case_status, _party_type, _party_name, _filing_no, _case_number, _advocate_name, _case_year, case_list_data).createTribunalsCaseList()
+                        response = jsonify({
+                            'status': 200,
+                            'message': 'Fetched NCLAT Tribunals Case List succesfully!',
+                            'partyName': case_list_table_data
+                        })
+                        return response
+                    else:
+                        return showMessage()
+                else:
+                    return serverError()
             else:
-                return showMessage()
+                return serverError()
         else:
             return dataNotFound()
-
     except:
-        logger.info(f"Error in tribunals_caselist :- {traceback.format_exc()}")
+        logger.info(traceback.format_exc())
 
 
 @app.route('/tribunals/detaildata', methods=['POST'])
@@ -80,51 +83,57 @@ def create_employee():
         }
 
         if request.method == 'POST':
-            conn = mysql.connect()
-            cursor = conn.cursor(pymysql.cursors.DictCursor)
-            sqlqueryselect = f"SELECT `token`,`xsrf_token`,`laravel_session` FROM `case_list` where `location`='{_location}' and `filing_no`={_filing_no}"
-            cursor.execute(sqlqueryselect)
-            security_tokens = cursor.fetchone()
-            _token = security_tokens.get('token')
-            _xsrf_token = security_tokens.get('xsrf_token')
-            _laravel_session = security_tokens.get('laravel_session')
-            conn.commit()
-            tribunals_data = get_tribunals_detail_data(input_data, _token, _xsrf_token, _laravel_session)
-            if tribunals_data != None:
-                getlastid = TribunalsInsert(court_type_id, _status, _location, _token, _xsrf_token, _laravel_session, tribunals_data).createCaseDetails()
+            security_tokens = get_tribunals_token_values(input_data)
+            if security_tokens != None:
+                _token = security_tokens[0]
+                _xsrf_token = security_tokens[1]
+                _laravel_session = security_tokens[2]
+                tribunals_data = get_tribunals_detail_data(input_data, _token, _xsrf_token, _laravel_session)
+                if tribunals_data != None:
+                    if tribunals_data != []:
+                        getlastid, case_details_table_data = TribunalsInsert(court_type_id, _status, _location, tribunals_data).createCaseDetails()
+                        response = jsonify({
+                            'status': 200,
+                            'case_id': getlastid,
+                            'message': 'Fetched NCLAT Tribunals data succesfully!',
+                            'partyName': case_details_table_data
+                        })
+                        return response
+                    else:
+                        return dataNotFound()
+                else:
+                    return serverError()
             else:
-                return dataNotFound()
-
-            respone = jsonify(
-                {'case_id': getlastid, 'meaasge': 'Fetched NCLAT Tribunals data succesfully!'})
-
-            return respone
+                return serverError()
         else:
             return showMessage()
-
     except:
-        logger.info(f"Error in create_employee :- {traceback.format_exc()}")
+        logger.info(traceback.format_exc())
 
 
-@app.errorhandler(404)
-def showMessage(error=None):
+def showMessage():
+    message = {
+        'status': 400,
+        'message': 'Invalid request!'
+    }
+    response = jsonify(message)
+    return response
+
+def dataNotFound():
     message = {
         'status': 404,
-        'message': 'Record not found: ' + request.url,
+        'message': 'Oops, data not found!'
     }
-    respone = jsonify(message)
-    respone.status_code = 404
-    return respone
+    response = jsonify(message)
+    return response
 
-
-@app.errorhandler(500)
-def dataNotFound(error=None):
+def serverError():
     message = {
-        'status': 'Oops, data not found!'
+        'status': 500,
+        'message': 'Server error, Please try after some time!'
     }
-    respone = jsonify(message)
-    respone.status_code = 500
-    return respone
+    response = jsonify(message)
+    return response
 
 
 if __name__ == "__main__":

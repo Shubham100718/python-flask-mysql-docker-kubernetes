@@ -1,4 +1,6 @@
-import traceback, logging, datetime
+import traceback
+import logging
+from timestamp_convertor import timestamp_convertor
 import urllib3
 urllib3.disable_warnings()
 
@@ -9,7 +11,6 @@ formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 file_handler = logging.FileHandler('tribunals.log')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
-
 
 def get_listing_details_table(session, hearing_date_format, filing_no, bench_name, token, xsrf_token, laravel_session):
     try:
@@ -36,7 +37,8 @@ def get_listing_details_table(session, hearing_date_format, filing_no, bench_nam
             'X-Requested-With': 'XMLHttpRequest'
         }
         listing_details_response = session.post("https://nclat.nic.in/display-board/listing_details", headers=listing_details_headers, data=listing_details_payload, verify=False)
-        if listing_details_response.status_code!=200:
+        
+        if listing_details_response.status_code != 200:
             logger.info('we have not got proper listing details response')
         
         listing_details_data = listing_details_response.json().get('data')
@@ -44,7 +46,7 @@ def get_listing_details_table(session, hearing_date_format, filing_no, bench_nam
         diary_no = listing_details_data.get('filing_no')
         listing_date_format = listing_details_data.get('hearing_date')
         if listing_date_format:
-            listing_date = datetime.datetime.strptime(listing_date_format, "%Y-%m-%d").timestamp()
+            listing_date = timestamp_convertor(listing_date_format)
         else:
             listing_date = listing_date_format
         court_no = listing_details_data.get('court_no')
@@ -61,7 +63,6 @@ def get_listing_details_table(session, hearing_date_format, filing_no, bench_nam
             'stage_of_case': stage_of_case
         }
         return data
-
-    except Exception as e:
+    except:
         logger.info(f"Error in get_listing_details_table :- {traceback.format_exc()}")
 

@@ -1,47 +1,48 @@
-version: '3.1'
+version: '3'
 services:
-  mysql-service:
-    container_name: mysqldb
+
+  mysql:
+    container_name: mysql
     image: mysql:latest
-    restart: always
-    expose:
-      - 3306
+    ports:
+      - "3306:3306"
     environment:
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: my_db
-      MYSQL_ROOT_PASSWORD: password
       MYSQL_USER: admin
-      MYSQL_PASSWORD: password
+      MYSQL_PASSWORD: admin
     volumes:
-      - mysql_data:/var/lib/mysql
+      - ./my_db.sql:/docker-entrypoint-initdb.d/my_db.sql   # Mount sql script into container's /docker-entrypoint-initdb.d directory to get table automatically created
+      - mysql-data:/var/lib/mysql  # Mount the volume for MySQL data storage
+
   phpmyadmin:
     container_name: phpmyadmin
     image: phpmyadmin:latest
-    restart: always
-    depends_on:
-      - mysql-service
     ports:
       - 8081:80
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      PMA_HOST: mysql-service
+      MYSQL_ROOT_PASSWORD: root
+      PMA_HOST: mysql
       PMA_USER: admin
-      PMA_PASSWORD: password
+      PMA_PASSWORD: admin
+    depends_on:
+      - mysql
+
   app:
     container_name: app
     # build: ./
     image: shubhamsaxena2207/flask-app:latest
-    links:
-      - mysql-service
-    depends_on:
-      - mysql-service
-    restart: on-failure
     ports:
       - 9000:9000
     environment:
-      MYSQL_HOST: mysql-service
+      MYSQL_HOST: mysql
       MYSQL_USER: admin
-      MYSQL_PASSWORD: password
+      MYSQL_PASSWORD: admin
       MYSQL_DB: my_db
+    depends_on:
+      - mysql
+
 volumes:
-  mysql_data:
+  mysql-data:
     driver: local
+

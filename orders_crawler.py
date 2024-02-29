@@ -1,7 +1,6 @@
-import traceback, logging, time
-import os
-from dotenv import load_dotenv
-load_dotenv()
+import traceback
+import logging
+import time
 import urllib3
 urllib3.disable_warnings()
 
@@ -12,7 +11,6 @@ formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 file_handler = logging.FileHandler('tribunals.log')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
-
 
 def get_orders_pdf(session, bench_name, filing_no, order_date_format, order_type_symbol, token, xsrf_token, laravel_session):
     try:
@@ -41,16 +39,17 @@ def get_orders_pdf(session, bench_name, filing_no, order_date_format, order_type
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
         }
         orders_response = session.post("https://nclat.nic.in/display-board/view_order", headers=orders_headers, data=orders_payload, verify=False)
-        if orders_response.status_code!=200:
+        
+        if orders_response.status_code != 200:
             logger.info('we have not got proper orders response')
 
         microsecond = round(time.time() * 1000)
         orders_filename = str(microsecond)+'-'+order_date_format+'.pdf'
-        with open(os.getenv('orders_path')+orders_filename, 'wb') as f:
+        with open('orders/'+orders_filename, 'wb') as f:
             f.write(orders_response.content)
 
         return orders_filename
 
-    except Exception as e:
+    except:
         logger.info(f"Error in get_orders_pdf :- {traceback.format_exc()}")
 

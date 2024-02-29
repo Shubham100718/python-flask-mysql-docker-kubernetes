@@ -7,7 +7,7 @@ spec:
     app: three-tier-app
   ports:
     - protocol: TCP
-      port: 80
+      port: 9000
       targetPort: 9000
       nodePort: 30004
   type: NodePort

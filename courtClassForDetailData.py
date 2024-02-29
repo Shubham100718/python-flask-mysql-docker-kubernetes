@@ -1,5 +1,9 @@
-import logging, pymysql, traceback
+import logging
+import pymysql
+import traceback
 from config import mysql
+from dotenv import load_dotenv
+load_dotenv()
 
 
 logger = logging.getLogger(__name__)
@@ -11,33 +15,30 @@ logger.addHandler(file_handler)
 
 class TribunalsInsert:
     
-    def __init__(self, court_type_id, _status, _location, _token, _xsrf_token, _laravel_session, tribunals_data):
+    def __init__(self, court_type_id, _status, _location, tribunals_data):
         self.court_type_id = court_type_id
         self._status = _status
         self._location = _location
-        self._token = _token
-        self._xsrf_token = _xsrf_token
-        self._laravel_session = _laravel_session
         self.tribunals_data = tribunals_data
         self.tribunals_case_details = tribunals_data[0]
-        self.tribunals_applicant_name_details = tribunals_data[1]
-        self.tribunals_respondant_name_details = tribunals_data[2]
-        self.tribunals_applicant_legal_representative = tribunals_data[3]
-        self.tribunals_respondant_legal_representative = tribunals_data[4]
-        self.tribunals_first_hearing_details = tribunals_data[5]
-        self.tribunals_last_hearing_details = tribunals_data[6]
-        self.tribunals_next_hearing_details = tribunals_data[7]
-        self.tribunals_case_history = tribunals_data[8]
-        self.tribunals_case_history_details = tribunals_data[9]
-        self.tribunals_order_history = tribunals_data[10]
-        self.tribunals_ias_other_application = tribunals_data[11]
-        self.tribunals_connected_cases = tribunals_data[11]
+        self.tribunals_applicant_name_details = tribunals_data[1][0]
+        self.tribunals_respondant_name_details = tribunals_data[1][1]
+        self.tribunals_applicant_legal_representative = tribunals_data[2][0]
+        self.tribunals_respondant_legal_representative = tribunals_data[2][1]
+        self.tribunals_first_hearing_details = tribunals_data[3]
+        self.tribunals_last_hearing_details = tribunals_data[4]
+        self.tribunals_next_hearing_details = tribunals_data[5]
+        self.tribunals_case_history = tribunals_data[6][0]
+        self.tribunals_case_history_details = tribunals_data[6][1]
+        self.tribunals_order_history = tribunals_data[7]
+        self.tribunals_ias_other_application = tribunals_data[8]
+        self.tribunals_connected_cases = tribunals_data[9]
         
     def createCaseDetails(self):
         try:
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
-            sqlqueryinsert = "INSERT INTO `case_details`(`court_type_id`,`filing_no`,`date_of_filing`,`case_no`,`registration_date`,`status`,`location`,`token`,`xsrf_token`,`laravel_session`,`case_status`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            sqlqueryinsert = "INSERT INTO `case_details`(`court_type_id`,`filing_no`,`date_of_filing`,`case_no`,`registration_date`,`status`,`location`,`case_status`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
             for i in self.tribunals_case_details:
                 bindData = (
                     self.court_type_id,
@@ -47,29 +48,29 @@ class TribunalsInsert:
                     i.get('registration_date', None),
                     i.get('status', None),
                     self._location,
-                    self._token,
-                    self._xsrf_token,
-                    self._laravel_session,
                     self._status
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
             getlastid = cursor.lastrowid
-            self.tribunals_case_details.clear()
-        except Exception as err:
+            sqlselectquery = f"SELECT * FROM `case_details` where `id`={getlastid}"
+            cursor.execute(sqlselectquery)
+            case_details_table_data = cursor.fetchall()
+            conn.commit()
+        except:
             logger.info(f"Error in SQL createCaseDetails:- {traceback.format_exc()}")
         finally:
             cursor.close()
             conn.close()
             self.createApplicantNameDetails(getlastid)
-            return getlastid
+            return getlastid, case_details_table_data
 
     def createApplicantNameDetails(self, getlastid):
         try:
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             sqlqueryinsert = "INSERT INTO `applicant_name`(`court_case_id`,`applicant_name`) VALUES (%s,%s)"
-            if self.tribunals_data[1][0].get('applicant_name')!=[]:
+            if self.tribunals_applicant_name_details[0].get('applicant_name')!=[]:
                 for applicant_name in self.tribunals_applicant_name_details[0].get('applicant_name'):
                     bindData = (
                         getlastid,
@@ -77,8 +78,7 @@ class TribunalsInsert:
                     )
                     cursor.execute(sqlqueryinsert, bindData)
                 conn.commit()
-                self.tribunals_applicant_name_details.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createApplicantNameDetails :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -90,7 +90,7 @@ class TribunalsInsert:
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             sqlqueryinsert = "INSERT INTO `respondant_name`(`court_case_id`,`respondant_name`) VALUES (%s,%s)"
-            if self.tribunals_data[2][0].get('respondant_name')!=[]:
+            if self.tribunals_respondant_name_details[0].get('respondant_name')!=[]:
                 for respondant_name in self.tribunals_respondant_name_details[0].get('respondant_name'):
                     bindData = (
                         getlastid,
@@ -98,8 +98,7 @@ class TribunalsInsert:
                     )
                     cursor.execute(sqlqueryinsert, bindData)
                 conn.commit()
-                self.tribunals_respondant_name_details.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createRespondantNameDetails :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -111,7 +110,7 @@ class TribunalsInsert:
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             sqlqueryinsert = "INSERT INTO `applicant_legal_representative`(`court_case_id`,`applicant_legal_representative_name`) VALUES (%s,%s)"
-            if self.tribunals_data[3][0].get('applicant_legal_representative_name')!=[]:
+            if self.tribunals_applicant_legal_representative[0].get('applicant_legal_representative_name')!=[]:
                 for applicant_legal_representative_name in self.tribunals_applicant_legal_representative[0].get('applicant_legal_representative_name'):
                     bindData = (
                         getlastid,
@@ -119,8 +118,7 @@ class TribunalsInsert:
                     )
                     cursor.execute(sqlqueryinsert, bindData)
                 conn.commit()
-                self.tribunals_applicant_legal_representative.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createApplicantLegalRepresentative :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -132,7 +130,7 @@ class TribunalsInsert:
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             sqlqueryinsert = "INSERT INTO `respondent_legal_representative`(`court_case_id`,`respondent_legal_representative_name`) VALUES (%s,%s)"
-            if self.tribunals_data[4][0].get('respondent_legal_representative_name')!=[]:
+            if self.tribunals_respondent_legal_representative[0].get('respondent_legal_representative_name')!=[]:
                 for respondent_legal_representative_name in self.tribunals_respondent_legal_representative[0].get('respondent_legal_representative_name'):
                     bindData = (
                         getlastid,
@@ -140,8 +138,7 @@ class TribunalsInsert:
                     )
                     cursor.execute(sqlqueryinsert, bindData)
                 conn.commit()
-                self.tribunals_respondent_legal_representative.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createRespondentLegalRepresentative :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -163,8 +160,7 @@ class TribunalsInsert:
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.tribunals_first_hearing_details.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createFirstHearingDetails :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -186,8 +182,7 @@ class TribunalsInsert:
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.tribunals_last_hearing_details.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createLastHearingDetails :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -209,8 +204,7 @@ class TribunalsInsert:
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.tribunals_next_hearing_details.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createNextHearingDetails :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -233,8 +227,7 @@ class TribunalsInsert:
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.tribunals_case_history.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createCaseHistory :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -264,8 +257,7 @@ class TribunalsInsert:
                 cursor.execute(sqlqueryinsert, bindData)
                 case_history_ids_list.pop(0)
             conn.commit()
-            self.tribunals_case_history_details.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createCaseHistoryDetails :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -288,8 +280,7 @@ class TribunalsInsert:
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.tribunals_order_history.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createOrderHistory :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -313,8 +304,7 @@ class TribunalsInsert:
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.tribunals_ias_other_application.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createIAsOtherApplication :- {traceback.format_exc()}")
         finally:
             cursor.close()
@@ -338,11 +328,10 @@ class TribunalsInsert:
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.tribunals_connected_cases.clear()
-        except Exception as err:
+        except:
             logger.info(f"Error in SQL createConnectedCases :- {traceback.format_exc()}")
         finally:
             cursor.close()
             conn.close()
-            return logger.info('Insert Tribunals data successfully')
+            return True
 

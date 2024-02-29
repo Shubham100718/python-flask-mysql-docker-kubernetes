@@ -1,7 +1,7 @@
 import logging
 import pymysql
-from config import mysql
 import traceback
+from config import mysql
 
 
 logger = logging.getLogger(__name__)
@@ -13,27 +13,25 @@ logger.addHandler(file_handler)
 
 class TribunalsCaseListInsert:
     
-    def __init__(self, court_type_id, _search_by, _location, _advocate_name, _party_name, _party_type, _case_type, _case_number, _case_year, _case_status, case_list_data):
+    def __init__(self, court_type_id, _search_by, _location, _case_type, _case_status, _party_type, _party_name, _filing_no, _case_number, _advocate_name, _case_year, case_list_data):
         self.court_type_id = court_type_id
         self._search_by = _search_by
         self._location = _location
-        self._advocate_name = _advocate_name
-        self._party_name = _party_name
-        self._party_type = _party_type
         self._case_type = _case_type
-        self._case_number = _case_number
-        self._case_year = _case_year
         self._case_status = _case_status
+        self._party_type = _party_type
+        self._party_name = _party_name
+        self._filing_no = _filing_no
+        self._case_number = _case_number
+        self._advocate_name = _advocate_name
+        self._case_year = _case_year
         self.case_list_data = case_list_data
 
     def createTribunalsCaseList(self):
         try:
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
-            sqlquerytruncate = "TRUNCATE TABLE `case_list`"
-            cursor.execute(sqlquerytruncate)
-            conn.commit()
-            sqlqueryinsert = "INSERT INTO `case_list`(`court_type_id`,`search_by`,`location`,`sr_no`,`filing_no`,`case_no`,`case_title`,`registration_date`,`status`,`action`,`advocate_name`,`party_name`,`party_type`,`case_type`,`case_number`,`case_year`,`case_status`,`token`,`xsrf_token`,`laravel_session`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            sqlqueryinsert = "INSERT INTO `case_list`(`court_type_id`,`search_by`,`location`,`sr_no`,`filing_no`,`case_no`,`case_title`,`registration_date`,`status`,`action`,`advocate_name`,`party_name`,`party_type`,`case_type`,`case_number`,`case_year`,`case_status`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
             for i in self.case_list_data:
                 bindData = (
                     self.court_type_id,
@@ -52,19 +50,27 @@ class TribunalsCaseListInsert:
                     self._case_type,
                     self._case_number,
                     self._case_year,
-                    self._case_status,
-                    i.get('token', None),
-                    i.get('xsrf_token', None),
-                    i.get('laravel_session', None)
+                    self._case_status
                 )
                 cursor.execute(sqlqueryinsert, bindData)
             conn.commit()
-            self.case_list_data.clear()
-        except Exception as err:
+            if self._search_by == '1':
+                sqlselectquery = f"SELECT * FROM `case_list` where `search_by`='{self._search_by}' and `location`='{self._location}' and `case_type`='{self._case_type}' and `case_number`='{self._case_number}' and `case_year`='{self._case_year}'"
+            elif self._search_by == '2':
+                sqlselectquery = f"SELECT * FROM `case_list` where `search_by`='{self._search_by}' and `location`='{self._location}' and `filing_no`='{self._filing_no}'"
+            elif self._search_by == '3':
+                sqlselectquery = f"SELECT * FROM `case_list` where `search_by`='{self._search_by}' and `location`='{self._location}' and `case_type`='{self._case_type}' and `case_status`='{self._case_status}' and `case_year`='{self._case_year}'"
+            elif self._search_by == '4':
+                sqlselectquery = f"SELECT * FROM `case_list` where `search_by`='{self._search_by}' and `location`='{self._location}' and `party_type`='{self._party_type}' and `party_name`='{self._party_name}' and `case_year`='{self._case_year}'"
+            elif self._search_by == '5':
+                sqlselectquery = f"SELECT * FROM `case_list` where `search_by`='{self._search_by}' and `location`='{self._location}' and `advocate_name`='{self._advocate_name}' and `case_year`='{self._case_year}'"
+            cursor.execute(sqlselectquery)
+            case_list_table_data = cursor.fetchall()
+            conn.commit()
+        except:
             logger.info(f"Error in SQL createTribunalsCaseList :- {traceback.format_exc()}")
         finally:
             cursor.close()
             conn.close()
-            return logger.info('Insert Tribunals Case List successfully')
-
+            return case_list_table_data
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 20, 2023 at 07:25 AM
+-- Generation Time: Feb 08, 2024 at 11:47 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -60,9 +60,8 @@ CREATE TABLE `case_details` (
   `registration_date` varchar(50) DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `location` varchar(50) DEFAULT NULL,
-  `token` longtext DEFAULT NULL,
-  `xsrf_token` longtext DEFAULT NULL,
-  `laravel_session` longtext DEFAULT NULL,
+  `created_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `modified_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `case_status` int(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -125,10 +124,8 @@ CREATE TABLE `case_list` (
   `case_type` varchar(11) DEFAULT NULL,
   `case_number` varchar(11) DEFAULT NULL,
   `case_year` varchar(11) DEFAULT NULL,
-  `case_status` varchar(11) DEFAULT NULL,
-  `token` longtext DEFAULT NULL,
-  `xsrf_token` longtext DEFAULT NULL,
-  `laravel_session` longtext DEFAULT NULL
+  `created_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `case_status` varchar(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -179,32 +176,6 @@ INSERT INTO `case_type_category` (`id`, `case_type_name`, `case_type_id`) VALUES
 (8, 'Restoration Application', '39'),
 (9, 'Transfer Appeal', '40'),
 (10, 'Transfer Original Petition (MRTP-AT)', '61');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `case_year_category`
---
-
-CREATE TABLE `case_year_category` (
-  `id` int(11) NOT NULL,
-  `case_year_value` varchar(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `case_year_category`
---
-
-INSERT INTO `case_year_category` (`id`, `case_year_value`) VALUES
-(1, 'All'),
-(2, '2023'),
-(3, '2022'),
-(4, '2021'),
-(5, '2020'),
-(6, '2019'),
-(7, '2018'),
-(8, '2017'),
-(9, '2016');
 
 -- --------------------------------------------------------
 
@@ -418,12 +389,6 @@ ALTER TABLE `case_type_category`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `case_year_category`
---
-ALTER TABLE `case_year_category`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `connected_cases`
 --
 ALTER TABLE `connected_cases`
@@ -524,24 +489,6 @@ ALTER TABLE `case_list`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `case_status_category`
---
-ALTER TABLE `case_status_category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `case_type_category`
---
-ALTER TABLE `case_type_category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT for table `case_year_category`
---
-ALTER TABLE `case_year_category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
-
---
 -- AUTO_INCREMENT for table `connected_cases`
 --
 ALTER TABLE `connected_cases`
@@ -566,12 +513,6 @@ ALTER TABLE `last_hearing_details`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `location_category`
---
-ALTER TABLE `location_category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
 -- AUTO_INCREMENT for table `next_hearing_details`
 --
 ALTER TABLE `next_hearing_details`
@@ -582,12 +523,6 @@ ALTER TABLE `next_hearing_details`
 --
 ALTER TABLE `order_history`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `party_type_category`
---
-ALTER TABLE `party_type_category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `respondant_name`
