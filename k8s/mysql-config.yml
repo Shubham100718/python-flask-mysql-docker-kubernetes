@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS my_db;
+    USE my_db;
+
+    CREATE TABLE `case_list` (
+      `id` int(11) NOT NULL,
+      `court_type_id` int(11) DEFAULT NULL,
+      `search_by` int(11) DEFAULT NULL COMMENT '1-caseno,2-filingno,3-casetype,4-party,5-advocate',
+      `location` varchar(50) DEFAULT NULL COMMENT 'delhi / chennai',
+      `sr_no` varchar(11) DEFAULT NULL,
+      `filing_no` varchar(250) DEFAULT NULL,
+      `case_no` varchar(250) DEFAULT NULL,
+      `case_title` longtext DEFAULT NULL,
+      `registration_date` varchar(50) DEFAULT NULL,
+      `status` varchar(50) DEFAULT NULL,
+      `action` varchar(11) DEFAULT NULL,
+      `advocate_name` varchar(255) DEFAULT NULL,
+      `party_name` varchar(255) DEFAULT NULL,
+      `party_type` varchar(11) DEFAULT NULL,
+      `case_type` varchar(11) DEFAULT NULL,
+      `case_number` varchar(11) DEFAULT NULL,
+      `case_year` varchar(11) DEFAULT NULL,
+      `created_date` timestamp NOT NULL DEFAULT current_timestamp(),
+      `case_status` varchar(11) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `case_details` (
+      `id` int(11) NOT NULL,
+      `court_type_id` int(11) DEFAULT NULL,
+      `filing_no` varchar(255) DEFAULT NULL,
+      `date_of_filing` varchar(50) DEFAULT NULL,
+      `case_no` varchar(255) DEFAULT NULL,
+      `registration_date` varchar(50) DEFAULT NULL,
+      `status` varchar(50) DEFAULT NULL,
+      `location` varchar(50) DEFAULT NULL,
+      `created_date` timestamp NOT NULL DEFAULT current_timestamp(),
+      `modified_date` timestamp NOT NULL DEFAULT current_timestamp(),
+      `case_status` int(1) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    ALTER TABLE `case_list`
+      ADD PRIMARY KEY (`id`);
+
+    ALTER TABLE `case_details`
+      ADD PRIMARY KEY (`id`);
