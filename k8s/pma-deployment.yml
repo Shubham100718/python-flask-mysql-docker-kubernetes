@@ -21,7 +21,7 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               value: "root"
             - name: PMA_HOST
-              value: "10.98.19.211"        # this is your mysql's service clusture IP, Make sure to change it with yours
+              value: "mysql.default.svc.cluster.local"        # this is your mysql's service clusture IP, Make sure to change it with yours
             - name: PMA_USER
               value: "admin"
             - name: PMA_PASSWORD

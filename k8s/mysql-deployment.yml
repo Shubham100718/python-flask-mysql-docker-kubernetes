@@ -19,9 +19,9 @@ spec:
           image: mysql:latest
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "admin"
+              value: "root"
             - name: MYSQL_DATABASE
-              value: "mydb"
+              value: "my_db"
             - name: MYSQL_USER
               value: "admin"
             - name: MYSQL_PASSWORD

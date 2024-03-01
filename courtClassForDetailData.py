@@ -2,8 +2,6 @@ import logging
 import pymysql
 import traceback
 from config import mysql
-from dotenv import load_dotenv
-load_dotenv()
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +22,7 @@ class TribunalsInsert:
         self.tribunals_applicant_name_details = tribunals_data[1][0]
         self.tribunals_respondant_name_details = tribunals_data[1][1]
         self.tribunals_applicant_legal_representative = tribunals_data[2][0]
-        self.tribunals_respondant_legal_representative = tribunals_data[2][1]
+        self.tribunals_respondent_legal_representative = tribunals_data[2][1]
         self.tribunals_first_hearing_details = tribunals_data[3]
         self.tribunals_last_hearing_details = tribunals_data[4]
         self.tribunals_next_hearing_details = tribunals_data[5]

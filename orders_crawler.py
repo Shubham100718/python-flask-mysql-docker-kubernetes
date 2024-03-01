@@ -1,8 +1,11 @@
+import os
 import traceback
 import logging
 import time
 import urllib3
+from dotenv import load_dotenv
 urllib3.disable_warnings()
+load_dotenv()
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +48,7 @@ def get_orders_pdf(session, bench_name, filing_no, order_date_format, order_type
 
         microsecond = round(time.time() * 1000)
         orders_filename = str(microsecond)+'-'+order_date_format+'.pdf'
-        with open('orders/'+orders_filename, 'wb') as f:
+        with open(os.getenv('orders_path')+orders_filename, 'wb') as f:
             f.write(orders_response.content)
 
         return orders_filename
