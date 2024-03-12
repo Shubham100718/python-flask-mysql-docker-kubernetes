@@ -24,7 +24,7 @@ spec:
                   name: flask-secrets
                   key: db_root_password
             - name: PMA_HOST
-              value: "mysql.default.svc.cluster.local"        # this is your mysql's service clusture IP, Make sure to change it with yours
+              value: "mysql.default.svc.cluster.local"
             - name: PMA_USER
               value: "admin"
             - name: PMA_PASSWORD
