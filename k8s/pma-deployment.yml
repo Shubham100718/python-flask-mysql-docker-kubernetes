@@ -19,12 +19,18 @@ spec:
           image: phpmyadmin:latest
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "root"
+              valueFrom:
+                secretKeyRef:
+                  name: flask-secrets
+                  key: db_root_password
             - name: PMA_HOST
               value: "mysql.default.svc.cluster.local"        # this is your mysql's service clusture IP, Make sure to change it with yours
             - name: PMA_USER
               value: "admin"
             - name: PMA_PASSWORD
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: flask-secrets
+                  key: db_password
           ports:
             - containerPort: 80

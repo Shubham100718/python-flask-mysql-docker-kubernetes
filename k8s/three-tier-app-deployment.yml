@@ -21,7 +21,10 @@ spec:
             - name: MYSQL_HOST
               value: "mysql.default.svc.cluster.local"          # this is your mysql's service clusture IP, Make sure to change it with yours
             - name: MYSQL_PASSWORD
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: flask-secrets
+                  key: db_password
             - name: MYSQL_USER
               value: "admin"
             - name: MYSQL_DB

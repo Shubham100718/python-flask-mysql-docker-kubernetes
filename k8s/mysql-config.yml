@@ -8,8 +8,8 @@ data:
     USE my_db;
 
     CREATE TABLE `case_list` (
-      `id` int(11) NOT NULL,
-      `court_type_id` int(11) DEFAULT NULL,
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_type_id` int(11) NOT NULL,
       `search_by` int(11) DEFAULT NULL COMMENT '1-caseno,2-filingno,3-casetype,4-party,5-advocate',
       `location` varchar(50) DEFAULT NULL COMMENT 'delhi / chennai',
       `sr_no` varchar(11) DEFAULT NULL,
@@ -30,8 +30,8 @@ data:
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
     CREATE TABLE `case_details` (
-      `id` int(11) NOT NULL,
-      `court_type_id` int(11) DEFAULT NULL,
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_type_id` int(11) NOT NULL,
       `filing_no` varchar(255) DEFAULT NULL,
       `date_of_filing` varchar(50) DEFAULT NULL,
       `case_no` varchar(255) DEFAULT NULL,
@@ -43,8 +43,108 @@ data:
       `case_status` int(1) DEFAULT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-    ALTER TABLE `case_list`
-      ADD PRIMARY KEY (`id`);
+    CREATE TABLE `applicant_legal_representative` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `applicant_legal_representative_name` text DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-    ALTER TABLE `case_details`
-      ADD PRIMARY KEY (`id`);
+    CREATE TABLE `applicant_name` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `applicant_name` text DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `case_history` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `sr_no` varchar(11) DEFAULT NULL,
+      `hearing_date` varchar(50) DEFAULT NULL,
+      `court_no` varchar(11) DEFAULT NULL,
+      `purpose` varchar(255) DEFAULT NULL,
+      `action` varchar(11) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `case_history_details` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `case_history_id` int(11) DEFAULT NULL,
+      `case_no` varchar(255) DEFAULT NULL,
+      `diary_no` varchar(50) DEFAULT NULL,
+      `listing_date` varchar(50) DEFAULT NULL,
+      `court_no` varchar(11) DEFAULT NULL,
+      `coram` text DEFAULT NULL,
+      `proceeding_summary` text DEFAULT NULL,
+      `stage_of_case` varchar(250) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `connected_cases` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `sr_no` varchar(11) DEFAULT NULL,
+      `filing_no` varchar(50) DEFAULT NULL,
+      `case_no` varchar(255) DEFAULT NULL,
+      `date_of_filing` varchar(50) DEFAULT NULL,
+      `registration_date` varchar(50) DEFAULT NULL,
+      `status` varchar(50) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `first_hearing_details` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `court_no` varchar(50) DEFAULT NULL,
+      `hearing_date` varchar(50) DEFAULT NULL,
+      `coram` text DEFAULT NULL,
+      `stage_of_case` varchar(250) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `ias_other_application` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `sr_no` varchar(11) DEFAULT NULL,
+      `filing_no` varchar(50) DEFAULT NULL,
+      `case_no` varchar(255) DEFAULT NULL,
+      `date_of_filing` varchar(50) DEFAULT NULL,
+      `registration_date` varchar(50) DEFAULT NULL,
+      `status` varchar(50) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `last_hearing_details` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `court_no` varchar(50) DEFAULT NULL,
+      `hearing_date` varchar(50) DEFAULT NULL,
+      `coram` text DEFAULT NULL,
+      `stage_of_case` varchar(250) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `next_hearing_details` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `hearing_date` varchar(50) DEFAULT NULL,
+      `court_no` varchar(50) DEFAULT NULL,
+      `proceedings_summary` text DEFAULT NULL,
+      `stage_of_case` varchar(250) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `order_history` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `sr_no` varchar(11) DEFAULT NULL,
+      `order_date` varchar(50) DEFAULT NULL,
+      `order_type` varchar(255) DEFAULT NULL,
+      `view` varchar(50) DEFAULT NULL,
+      `orders_url` varchar(255) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `respondant_name` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `respondant_name` varchar(255) DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+    CREATE TABLE `respondent_legal_representative` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `court_case_id` int(11) NOT NULL,
+      `respondent_legal_representative_name` text DEFAULT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
